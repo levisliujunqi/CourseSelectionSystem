@@ -1,5 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, ManyToOne } from 'typeorm';
 import { Selection } from '../../selection/entities/selection.entity';
+import { User } from 'src/user/entities/user.entity';
 @Entity('courses')
 export class Course {
   @PrimaryGeneratedColumn()
@@ -11,10 +12,7 @@ export class Course {
   @Column('text')
   description: string;
 
-  @Column('text')
-  teacher: string;
-
-  @Column('int')
+  @ManyToOne(() => User, user => user.courses , { eager: true })
   teacherId: number;
 
   @OneToMany(() => Selection, selection => selection.course)

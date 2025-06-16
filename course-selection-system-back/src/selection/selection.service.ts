@@ -4,7 +4,8 @@ import { Repository } from 'typeorm';
 import { Selection } from './entities/selection.entity';
 import { CreateSelectionDto } from './dto/create-selection.dto';
 import { UpdateSelectionDto } from './dto/update-selection.dto';
-
+import { Course } from 'src/course/entities/course.entity';
+import { User } from 'src/user/entities/user.entity';
 @Injectable()
 export class SelectionService {
   constructor(
@@ -13,7 +14,11 @@ export class SelectionService {
   ) {}
 
   async create(createSelectionDto: CreateSelectionDto): Promise<Selection|null> {
-    const selection = this.selectionRepository.create(createSelectionDto);
+    const selection = this.selectionRepository.create({
+      user:{id:createSelectionDto.userId} as User,
+      course:{id:createSelectionDto.courseId} as Course,
+    }
+    );
     return this.selectionRepository.save(selection);
   }
 
@@ -23,11 +28,6 @@ export class SelectionService {
 
   async findOne(id: number): Promise<Selection|null> {
     return this.selectionRepository.findOneBy({ id });
-  }
-
-  async update(id: number, updateSelectionDto: UpdateSelectionDto): Promise<Selection|null> {
-    await this.selectionRepository.update(id, updateSelectionDto);
-    return this.findOne(id);
   }
 
   async remove(id: number): Promise<void> {

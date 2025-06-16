@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { Selection } from '../../selection/entities/selection.entity';
+import { Course } from '../../course/entities/course.entity';
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
@@ -16,4 +17,10 @@ export class User {
 
   @OneToMany(() => Selection, selection => selection.user)
   selections: Selection[];
+
+  @OneToMany(()=> Course, course => course.teacherId)
+  courses: Course[];
+
+  @Column()
+  usertype: 'student' | 'teacher' | 'admin';
 }

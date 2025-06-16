@@ -12,4 +12,8 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   readonly password?: string;
+
+  @IsOptional()
+  @IsString()
+  readonly usertype?: 'student' | 'teacher' | 'admin';
 }

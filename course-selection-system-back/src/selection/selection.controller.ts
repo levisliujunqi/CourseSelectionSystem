@@ -1,7 +1,6 @@
 import { Controller, Get, Post, Body, Param, Put, Delete, ParseIntPipe } from '@nestjs/common';
 import { SelectionService } from './selection.service';
 import { CreateSelectionDto } from './dto/create-selection.dto';
-import { UpdateSelectionDto } from './dto/update-selection.dto';
 import { Selection } from './entities/selection.entity';
 
 @Controller('selections')
@@ -22,12 +21,7 @@ export class SelectionController {
   findOne(@Param('id',ParseIntPipe) id: number): Promise<Selection|null> {
     return this.selectionService.findOne(id);
   }
-
-  @Put(':id')
-  update(@Param('id',ParseIntPipe) id: number, @Body() updateSelectionDto: UpdateSelectionDto): Promise<Selection|null> {
-    return this.selectionService.update(id, updateSelectionDto);
-  }
-
+  
   @Delete(':id')
   remove(@Param('id',ParseIntPipe) id: number): Promise<void> {
     return this.selectionService.remove(id);

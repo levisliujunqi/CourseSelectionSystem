@@ -7,15 +7,9 @@ export class Selection {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => User,user => user.selections)
+  @ManyToOne(() => User,user => user.selections, { eager: true })
   user: User;
 
-  @ManyToOne(() => Course, course => course.selections)
+  @ManyToOne(() => Course, course => course.selections,{ eager: true })
   course: Course;
-
-  @Column()
-  semester: string;
-
-  @Column()
-  year: number;
 }
