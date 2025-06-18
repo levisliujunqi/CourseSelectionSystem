@@ -12,7 +12,9 @@ export class Course {
   @Column('text')
   description: string;
 
-  @ManyToOne(() => User, user => user.courses , { eager: true })
+  @ManyToOne(() => User, user => user.courses , {
+    eager: true,
+    onDelete: 'CASCADE'})
   teacherId: number;
 
   @OneToMany(() => Selection, selection => selection.course)

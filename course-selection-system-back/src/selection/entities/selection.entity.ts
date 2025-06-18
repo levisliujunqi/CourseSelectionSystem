@@ -7,9 +7,13 @@ export class Selection {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => User,user => user.selections, { eager: true })
+  @ManyToOne(() => User,user => user.selections, { 
+    eager: true,
+    onDelete: 'CASCADE'})
   user: User;
 
-  @ManyToOne(() => Course, course => course.selections,{ eager: true })
+  @ManyToOne(() => Course, course => course.selections,{
+    eager: true,
+    onDelete: 'CASCADE'})
   course: Course;
 }

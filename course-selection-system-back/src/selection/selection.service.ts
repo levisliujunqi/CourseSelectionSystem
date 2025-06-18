@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Selection } from './entities/selection.entity';
 import { CreateSelectionDto } from './dto/create-selection.dto';
-import { UpdateSelectionDto } from './dto/update-selection.dto';
 import { Course } from 'src/course/entities/course.entity';
 import { User } from 'src/user/entities/user.entity';
 @Injectable()
@@ -32,5 +31,19 @@ export class SelectionService {
 
   async remove(id: number): Promise<void> {
     await this.selectionRepository.delete(id);
+  }
+
+  async findByStudent(userId: number): Promise<Selection[]> {
+    return this.selectionRepository.find({
+      where: { user: { id: userId } },
+      relations: ['course', 'user'],
+    });
+  }
+
+  async findByCourse(courseId: number): Promise<Selection[]> {
+    return this.selectionRepository.find({
+      where: { course: { id: courseId } },
+      relations: ['course', 'user'],
+    });
   }
 }

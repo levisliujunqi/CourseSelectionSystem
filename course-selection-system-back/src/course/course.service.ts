@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { Course } from './entities/course.entity';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
@@ -32,5 +32,11 @@ export class CourseService {
 
   async remove(id: number): Promise<void> {
     await this.courseRepository.delete(id);
+  }
+
+  async searchByName(name: string): Promise<Course[]> {
+    return this.courseRepository.find({
+      where: { name: Like(`%${name}%`) },
+    });
   }
 }

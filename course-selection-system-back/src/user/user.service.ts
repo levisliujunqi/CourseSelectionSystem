@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -33,4 +33,17 @@ export class UserService {
   async remove(id: number): Promise<void> {
     await this.userRepository.delete(id);
   }
+
+  async findByName(name: string): Promise<User|null> {
+    return this.userRepository.findOne({
+      where: { name },
+      select: ['id', 'name', 'usertype', 'password'],
+    });
+  }
+
+  async searchByName(name: string): Promise<User[]> {
+      return this.userRepository.find({
+        where: { name: Like(`%${name}%`) },
+      });
+    }
 }

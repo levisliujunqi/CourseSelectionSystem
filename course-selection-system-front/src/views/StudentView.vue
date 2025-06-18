@@ -1,0 +1,186 @@
+<template>
+    <div>
+        <Menu mode="horizontal" theme="light" :active-name="activeMenu" @on-select="onSelect">
+            <MenuItem name="courses">
+            <Icon type="ios-book" /> 课程列表
+            </MenuItem>
+            <MenuItem name="my">
+            <Icon type="ios-paper" /> 我的选课
+            </MenuItem>
+            <Submenu name="me">
+                <template #title>
+                    <Icon type="ios-settings" /> {{ store.state.name }}
+                </template>
+                <MenuItem name="logout">
+                <Icon type="ios-log-out" /> 退出登陆
+                </MenuItem>
+            </Submenu>
+        </Menu>
+
+        <div v-if="activeMenu === 'courses'" style="margin-top:16px">
+            <Space style="margin-bottom:12px">
+                <Button icon="ios-refresh" @click="fetchCourses">刷新</Button>
+                <Input v-model="searchName" placeholder="输入课程名搜索" style="width:200px" />
+                <Button type="primary" @click="fetchCourses">搜索</Button>
+            </Space>
+            <Table :columns="courseColumns" :data="courses" row-key="id" stripe>
+                <template #operation="{ row }">
+                    <Button type="primary" size="small" :disabled="selectedCourseIds.includes(row.id)"
+                        @click="onSelectCourse(row.id)">
+                        {{ selectedCourseIds.includes(row.id) ? '已选' : '选课' }}
+                    </Button>
+                </template>
+            </Table>
+        </div>
+
+        <div v-else-if="activeMenu === 'my'" style="margin-top:16px">
+            <Space style="margin-bottom:12px">
+                <Button icon="ios-refresh" @click="fetchSelections">刷新</Button>
+            </Space>
+            <Table :columns="selectionColumns" :data="selections" row-key="id" stripe>
+                <template #courseId="{ row }">{{ row.course?.id }}</template>
+                <template #courseName="{ row }">{{ row.course?.name }}</template>
+                <template #courseDesc="{ row }">{{ row.course?.description }}</template>
+                <template #operation="{ row }">
+                    <Button type="error" size="small" @click="onDeleteSelection(row.id)">退选</Button>
+                </template>
+            </Table>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import api from '@/api'
+import store from '@/store'
+import { useRouter } from 'vue-router'
+import {
+    Menu,
+    MenuItem,
+    Submenu,
+    Space,
+    Button,
+    Table,
+    Input, 
+    Icon,
+    Message
+} from 'view-ui-plus'
+
+interface Course {
+    id: number
+    name: string
+    description: string
+}
+interface Selection {
+    id: number
+    course: Course
+}
+
+const router = useRouter()
+const activeMenu = ref<'courses' | 'my'>('courses')
+
+const searchName = ref('') 
+const courses = ref<Course[]>([])
+const selections = ref<Selection[]>([])
+const selectedCourseIds = ref<number[]>([])
+
+const courseColumns = [
+    { title: '课程ID', key: 'id' },
+    { title: '课程名', key: 'name' },
+    { title: '描述', key: 'description' },
+    { title: '操作', slot: 'operation' }
+]
+const selectionColumns = [
+    { title: '选课ID', key: 'id' },
+    { title: '课程ID', slot: 'courseId' },
+    { title: '课程名', slot: 'courseName' },
+    { title: '描述', slot: 'courseDesc' },
+    { title: '操作', slot: 'operation' }
+]
+
+onMounted(() => {
+    if (!store.state.isloggedIn) {
+        router.push('/login')
+        return
+    }
+    fetchCourses()
+    fetchSelections()
+})
+
+function onSelect(name: string) {
+    if (name === 'logout') {
+        store.commit('clearCredentials')
+        router.push('/login')
+        Message.success('已退出登录')
+        return
+    }
+    activeMenu.value = name as any
+    if (name === 'courses') fetchCourses()
+    else fetchSelections()
+}
+
+async function fetchCourses() {
+    try {
+        let res
+        if (searchName.value.trim()) {
+            res = await api.get(`/courses/search/${searchName.value}`, {
+                params: {
+                    username: store.state.name,
+                    userpassword: store.state.password
+                }
+            })
+        } else {
+            res = await api.get('/courses', {
+                params: {
+                    username: store.state.name,
+                    userpassword: store.state.password
+                }
+            })
+        }
+        courses.value = res.data
+        Message.success('获取课程列表成功')
+    } catch {
+        Message.error('获取课程列表失败')
+    }
+}
+
+async function fetchSelections() {
+    try {
+        const { data } = await api.get('/selections/my', {
+            params: { username: store.state.name, userpassword: store.state.password }
+        })
+        selections.value = data
+        selectedCourseIds.value = data.map((s: Selection) => s.course.id)
+        Message.success('获取我的选课成功')
+    } catch {
+        Message.error('获取我的选课失败')
+    }
+}
+
+async function onSelectCourse(courseId: number) {
+    try {
+        await api.post('/selections', {
+            userId: store.state.userid,
+            courseId,
+            username: store.state.name,
+            userpassword: store.state.password
+        })
+        Message.success('选课成功')
+        fetchSelections()
+    } catch {
+        Message.error('选课失败')
+    }
+}
+
+async function onDeleteSelection(id: number) {
+    try {
+        await api.delete(`/selections/${id}`, {
+            data: { username: store.state.name, userpassword: store.state.password }
+        })
+        Message.success('退选成功')
+        fetchSelections()
+    } catch {
+        Message.error('退选失败')
+    }
+}
+</script>
