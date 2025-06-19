@@ -11,11 +11,33 @@
                 <template #title>
                     <Icon type="ios-settings" /> {{ store.state.name }}
                 </template>
+                <MenuItem name="changePwd">
+                <Icon type="ios-key" />
+                修改密码
+                </MenuItem>
                 <MenuItem name="logout">
                 <Icon type="ios-log-out" /> 退出登陆
                 </MenuItem>
             </Submenu>
         </Menu>
+
+        <Modal v-model="showChangePwdModal" title="修改密码">
+            <Form :model="changePwdForm" label-width="100px">
+                <FormItem label="旧密码">
+                    <Input v-model="changePwdForm.oldPwd" type="password" placeholder="请输入旧密码" />
+                </FormItem>
+                <FormItem label="新密码">
+                    <Input v-model="changePwdForm.newPwd" type="password" placeholder="请输入新密码" />
+                </FormItem>
+                <FormItem label="确认密码">
+                    <Input v-model="changePwdForm.confirmPwd" type="password" placeholder="请确认新密码" />
+                </FormItem>
+            </Form>
+            <template #footer>
+                <Button @click="showChangePwdModal = false">取消</Button>
+                <Button type="primary" @click="submitChangePwd">保存</Button>
+            </template>
+        </Modal>
 
         <div v-if="activeMenu === 'courses'" style="margin-top:16px">
             <Space style="margin-bottom:12px">
@@ -54,7 +76,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, reactive } from 'vue'
 import api from '@/api'
 import store from '@/store'
 import { useRouter } from 'vue-router'
@@ -65,10 +87,17 @@ import {
     Space,
     Button,
     Table,
-    Input, 
+    Input,
     Icon,
     Message
 } from 'view-ui-plus'
+
+const showChangePwdModal = ref(false)
+const changePwdForm = reactive({
+    oldPwd: '',
+    newPwd: '',
+    confirmPwd: ''
+})
 
 interface Course {
     id: number
@@ -84,7 +113,7 @@ interface Selection {
 const router = useRouter()
 const activeMenu = ref<'courses' | 'my'>('courses')
 
-const searchName = ref('') 
+const searchName = ref('')
 const courses = ref<Course[]>([])
 const selections = ref<Selection[]>([])
 const selectedCourseIds = ref<number[]>([])
@@ -92,13 +121,13 @@ const selectedCourseIds = ref<number[]>([])
 const courseColumns = [
     { title: '课程名', key: 'name' },
     { title: '描述', key: 'description' },
-    { title: '老师', slot: 'teacher'},
+    { title: '老师', slot: 'teacher' },
     { title: '操作', slot: 'operation' }
 ]
 const selectionColumns = [
     { title: '课程名', slot: 'courseName' },
     { title: '描述', slot: 'courseDesc' },
-    { title: '老师', slot: 'teacher'},
+    { title: '老师', slot: 'teacher' },
     { title: '操作', slot: 'operation' }
 ]
 
@@ -111,12 +140,44 @@ onMounted(() => {
     fetchSelections()
 })
 
+async function submitChangePwd() {
+    if (changePwdForm.newPwd !== changePwdForm.confirmPwd) {
+        Message.error('两次输入的密码不一致')
+        return
+    }
+    try {
+        await api.put(
+            `/users/${store.state.userid}`,
+            {
+                password: changePwdForm.newPwd,
+                username: store.state.name,
+                userpassword: changePwdForm.oldPwd
+            }
+        )
+        Message.success('密码修改成功')
+        showChangePwdModal.value = false
+        store.commit('setPassword', changePwdForm.newPwd)
+        changePwdForm.oldPwd = ''
+        changePwdForm.newPwd = ''
+        changePwdForm.confirmPwd = ''
+        store.commit('clearCredentials')
+        router.push('/login')
+        Message.success('请重新登陆')
+    } catch {
+        Message.error('密码修改失败')
+    }
+}
+
 function onSelect(name: string) {
     if (name === 'logout') {
         store.commit('clearCredentials')
         router.push('/login')
         Message.success('已退出登录')
         return
+    }
+    if (name === 'changePwd'){
+        showChangePwdModal.value=true
+        return;
     }
     activeMenu.value = name as any
     if (name === 'courses') fetchCourses()

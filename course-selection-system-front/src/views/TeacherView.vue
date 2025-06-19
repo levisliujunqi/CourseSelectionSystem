@@ -11,12 +11,34 @@
                     <Icon type="ios-settings" />
                     {{ store.state.name }}
                 </template>
+                <MenuItem name="changePwd">
+                <Icon type="ios-key" />
+                修改密码
+                </MenuItem>
                 <MenuItem name="logout">
                 <Icon type="ios-log-out" />
                 退出登陆
                 </MenuItem>
             </Submenu>
         </Menu>
+
+        <Modal v-model="showChangePwdModal" title="修改密码">
+            <Form :model="changePwdForm" label-width="100px">
+                <FormItem label="旧密码">
+                    <Input v-model="changePwdForm.oldPwd" type="password" placeholder="请输入旧密码" />
+                </FormItem>
+                <FormItem label="新密码">
+                    <Input v-model="changePwdForm.newPwd" type="password" placeholder="请输入新密码" />
+                </FormItem>
+                <FormItem label="确认密码">
+                    <Input v-model="changePwdForm.confirmPwd" type="password" placeholder="请确认新密码" />
+                </FormItem>
+            </Form>
+            <template #footer>
+                <Button @click="showChangePwdModal = false">取消</Button>
+                <Button type="primary" @click="submitChangePwd">保存</Button>
+            </template>
+        </Modal>
 
         <div v-if="activeMenu === 'course'" style="margin-top:16px">
             <Space style="margin-bottom:12px">
@@ -89,7 +111,12 @@ import {
   MenuItem,
   InputNumber
 } from 'view-ui-plus'
-
+const showChangePwdModal = ref(false)
+const changePwdForm = reactive({
+    oldPwd:'',
+  newPwd: '',
+  confirmPwd: ''
+})
 interface User {
   id: number
   name: string
@@ -250,6 +277,34 @@ async function onShowStudents(courseId: number) {
     }
 }
 
+async function submitChangePwd() {
+  if (changePwdForm.newPwd !== changePwdForm.confirmPwd) {
+    Message.error('两次输入的密码不一致')
+    return
+  }
+  try {
+    await api.put(
+      `/users/${store.state.userid}`,
+      {
+        password: changePwdForm.newPwd,
+        username: store.state.name,
+        userpassword: changePwdForm.oldPwd
+      }
+    )
+    Message.success('密码修改成功')
+    showChangePwdModal.value = false
+    store.commit('setPassword', changePwdForm.newPwd)
+    changePwdForm.oldPwd = ''
+    changePwdForm.newPwd = ''
+    changePwdForm.confirmPwd = ''
+    store.commit('clearCredentials')
+    router.push('/login')
+    Message.success('请重新登陆')
+  } catch {
+    Message.error('密码修改失败')
+  }
+}
+
 function onselect(name: string) {
     switch (name) {
         case 'user':
@@ -258,6 +313,9 @@ function onselect(name: string) {
         case 'course':
             activeMenu.value = 'course'
             break
+        case 'changePwd':
+            showChangePwdModal.value=true
+            return
         case 'logout':
             store.commit('clearCredentials')
             router.push('/login')
