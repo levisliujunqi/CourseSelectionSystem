@@ -8,7 +8,11 @@ import { ForbiddenException } from '@nestjs/common';
 @Controller('courses')
 export class CourseController {
   constructor(private readonly courseService: CourseService) {}
-
+  @Get('search/:name')
+  async searchByName(@Param('name') name: string): Promise<Course[]> {
+    return this.courseService.searchByName(name);
+  }
+  
   @Post()
   create(@Body() createCourseDto: CreateCourseDto,@Req() req): Promise<Course> {
     const user=req.user;
@@ -46,8 +50,4 @@ export class CourseController {
     return this.courseService.remove(id);
   }
 
-  @Get('search/:name')
-  async searchByName(@Param('name') name: string): Promise<Course[]> {
-    return this.courseService.searchByName(name);
-  }
 }

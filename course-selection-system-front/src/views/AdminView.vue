@@ -72,8 +72,8 @@
             </Space>
 
             <Table :columns="courseColumns" :data="courses" row-key="id" stripe>
-                <template #teacherId="{ row }">
-                    {{ row.teacherId.id }}
+                <template #teacher="{ row }">
+                    {{ row.teacherId.name }}
                 </template>
                 <template #students="{ row }">
                     <Button type="default" @click="onShowStudents(row.id)">
@@ -101,8 +101,8 @@
                     <FormItem label="描述">
                         <Input v-model="courseForm.description" placeholder="请输入描述" />
                     </FormItem>
-                    <FormItem label="教师ID">
-                        <Input v-model="courseForm.teacherId" placeholder="请输入教师ID" /> <!-- 普通文本框 -->
+                    <FormItem label="教师">
+                        <Input v-model="courseForm.teachername" placeholder="请输入教师姓名" />
                     </FormItem>
                 </Form>
                 <template #footer>
@@ -163,21 +163,19 @@ const isEditUser = ref(false)
 const userForm = reactive({ id: 0, name: '', password: '', usertype: 'student' })
 const showCourseModal = ref(false)
 const isEditCourse = ref(false)
-const courseForm = reactive({ id: 0, name: '', description: '', teacherId: 0 })
+const courseForm = reactive({ id: 0, name: '', description: '', teachername: '', teacherId: 0 })
 const showStudentModal = ref(false)
 
 const userColumns = [
-    { title: 'ID', key: 'id' },
     { title: '用户名', key: 'name' },
     { title: '角色', key: 'usertype' },
     { title: '操作', slot: 'operation' }
 ]
 
 const courseColumns = [
-    { title: 'ID', key: 'id' },
     { title: '课程名', key: 'name' },
     { title: '描述', key: 'description' },
-    { title: '教师ID', slot: 'teacherId' },
+    { title: '教师', slot: 'teacher' },
     { title: '选课学生', slot: 'students' },
     { title: '操作', slot: 'operation' }
 ]
@@ -301,24 +299,39 @@ async function onDeleteUser(id: number) {
 
 function onAddCourse() {
     isEditCourse.value = false
-    Object.assign(courseForm, { id: 0, name: '', description: '', teacherId: 0 })
+    Object.assign(courseForm, { id: 0, name: '', description: '', teachername: '' })
     showCourseModal.value = true
 }
 
 function onEditCourse(row: Course) {
     isEditCourse.value = true
-    Object.assign(courseForm, { id: row.id, name: row.name, description: row.description, teacherId: row.teacherId.id })
+    Object.assign(courseForm, { id: row.id, name: row.name, description: row.description, teachername: row.teacherId.name })
     showCourseModal.value = true
 }
 
 async function submitCourse() {
     try {
-        const { id, ...payload } = courseForm
+        const { id, teachername, ...payload } = courseForm
+        const res = await api.get(
+            `/users/searchExact/${encodeURIComponent(teachername)}`,
+            {
+                params: {
+                    username: store.state.name,
+                    userpassword: store.state.password
+                }
+            }
+        )
+        const teacher = res.data
+        if (teacher.usertype == 'student') {
+            Message.error('请选择有效的教师账号')
+            return
+        }
         if (isEditCourse.value) {
             await api.put(
                 `/courses/${id}`,
                 {
                     ...payload,
+                    teacherId: teacher.id,
                     username: store.state.name,
                     userpassword: store.state.password
                 }
@@ -329,6 +342,7 @@ async function submitCourse() {
                 '/courses',
                 {
                     ...payload,
+                    teacherId: teacher.id,
                     username: store.state.name,
                     userpassword: store.state.password
                 }

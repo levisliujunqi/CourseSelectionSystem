@@ -30,6 +30,9 @@
                         {{ selectedCourseIds.includes(row.id) ? '已选' : '选课' }}
                     </Button>
                 </template>
+                <template #teacher="{ row }">
+                    {{ row.teacherId?.name }}
+                </template>
             </Table>
         </div>
 
@@ -41,6 +44,7 @@
                 <template #courseId="{ row }">{{ row.course?.id }}</template>
                 <template #courseName="{ row }">{{ row.course?.name }}</template>
                 <template #courseDesc="{ row }">{{ row.course?.description }}</template>
+                <template #teacher="{ row }">{{ row.course?.teacherId.name }}</template>
                 <template #operation="{ row }">
                     <Button type="error" size="small" @click="onDeleteSelection(row.id)">退选</Button>
                 </template>
@@ -70,6 +74,7 @@ interface Course {
     id: number
     name: string
     description: string
+    teacherId
 }
 interface Selection {
     id: number
@@ -85,16 +90,15 @@ const selections = ref<Selection[]>([])
 const selectedCourseIds = ref<number[]>([])
 
 const courseColumns = [
-    { title: '课程ID', key: 'id' },
     { title: '课程名', key: 'name' },
     { title: '描述', key: 'description' },
+    { title: '老师', slot: 'teacher'},
     { title: '操作', slot: 'operation' }
 ]
 const selectionColumns = [
-    { title: '选课ID', key: 'id' },
-    { title: '课程ID', slot: 'courseId' },
     { title: '课程名', slot: 'courseName' },
     { title: '描述', slot: 'courseDesc' },
+    { title: '老师', slot: 'teacher'},
     { title: '操作', slot: 'operation' }
 ]
 

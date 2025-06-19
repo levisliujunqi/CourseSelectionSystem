@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Put, Delete, Param, ParseIntPipe, Req} from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Delete, Param, ParseIntPipe, Req } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -6,12 +6,12 @@ import { User } from './entities/user.entity';
 
 @Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto,@Req() req): Promise<User> {
-    const user=req.user;
-    if(!user||user.usertype!='admin'||createUserDto.name=='admin'){
+  create(@Body() createUserDto: CreateUserDto, @Req() req): Promise<User> {
+    const user = req.user;
+    if (!user || user.usertype != 'admin' || createUserDto.name == 'admin') {
       throw new Error('Unauthorized');
     }
     return this.userService.create(createUserDto);
@@ -19,17 +19,17 @@ export class UserController {
 
   @Get()
   findAll(@Req() req): Promise<User[]> {
-    const user=req.user;
-    if(!user||user.usertype!='admin'){
+    const user = req.user;
+    if (!user || user.usertype != 'admin') {
       throw new Error('Unauthorized');
     }
     return this.userService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number,@Req() req): Promise<User|null> {
-    const user=req.user;
-    if(!user||user.usertype!='admin'&&user.id!=id){
+  findOne(@Param('id', ParseIntPipe) id: number, @Req() req): Promise<User | null> {
+    const user = req.user;
+    if (!user || user.usertype != 'admin' && user.id != id) {
       throw new Error('Unauthorized');
     }
     return this.userService.findOne(id);
@@ -40,7 +40,7 @@ export class UserController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
     @Req() req
-  ): Promise<User|null> {
+  ): Promise<User | null> {
     const authUser = req.user;
     if (!authUser || (authUser.usertype != 'admin' && authUser.id != id)) {
       throw new Error('Unauthorized');
@@ -67,22 +67,27 @@ export class UserController {
   }
 
   @Delete(':id')
-  remove(@Param('id',ParseIntPipe) id: number,@Req() req): Promise<void> {
-    const user=req.user;
-    if(!user||user.usertype!='admin'){
+  remove(@Param('id', ParseIntPipe) id: number, @Req() req): Promise<void> {
+    const user = req.user;
+    if (!user || user.usertype != 'admin') {
       throw new Error('Unauthorized');
     }
     return this.userService.remove(id);
   }
 
   @Post('login')
-  async login(@Req() req){
-    const user=req.user;
-    return {id:user.id};
+  async login(@Req() req) {
+    const user = req.user;
+    return { id: user.id };
   }
 
   @Get('search/:name')
-    async searchByName(@Param('name') name: string): Promise<User[]> {
-      return this.userService.searchByName(name);
-    }
+  async searchByName(@Param('name') name: string): Promise<User[]> {
+    return this.userService.searchByName(name);
+  }
+
+  @Get('searchExact/:name')
+  async searchByNameExact(@Param('name') name: string): Promise<User|null> {
+    return this.userService.searchByNameExact(name);
+  }
 }

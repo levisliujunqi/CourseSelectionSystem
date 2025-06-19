@@ -9,7 +9,7 @@ export class User {
   @Column({ unique:true,length: 100 })
   name: string;
 
-  @Column()
+  @Column({select:false})
   password: string;
 
   @OneToMany(() => Selection, selection => selection.user)

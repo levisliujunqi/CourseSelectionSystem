@@ -4,6 +4,7 @@ import { Like, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { error } from 'console';
 
 @Injectable()
 export class UserService {
@@ -40,10 +41,18 @@ export class UserService {
       select: ['id', 'name', 'usertype', 'password'],
     });
   }
-
+  
   async searchByName(name: string): Promise<User[]> {
       return this.userRepository.find({
         where: { name: Like(`%${name}%`) },
       });
+    }
+
+  async searchByNameExact(name: string): Promise<User> {
+      const user=await this.userRepository.findOneBy({name});
+      if(!user){
+        throw new Error("user not found")
+      }
+      return user;
     }
 }
