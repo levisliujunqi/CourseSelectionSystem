@@ -69,8 +69,18 @@
         <div v-else-if="activeMenu === 'my'" style="margin-top:16px">
             <Space style="margin-bottom:12px">
                 <Button icon="ios-refresh" @click="fetchSelections">刷新</Button>
+                <Input
+                    v-model="searchMy"
+                    placeholder="输入课程名搜索"
+                    style="width:200px"
+                />
             </Space>
-            <Table :columns="selectionColumns" :data="selections" row-key="id" stripe>
+            <Table
+                :columns="selectionColumns"
+                :data="filteredSelections"
+                row-key="id"
+                stripe
+            >
                 <template #courseId="{ row }">{{ row.course?.id }}</template>
                 <template #courseName="{ row }">{{ row.course?.name }}</template>
                 <template #courseDesc="{ row }">{{ row.course?.description }}</template>
@@ -95,7 +105,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive } from 'vue'
+import { ref, onMounted, reactive, computed } from 'vue'
 import api from '@/api'
 import store from '@/store'
 import { useRouter } from 'vue-router'
@@ -141,6 +151,7 @@ const router = useRouter()
 const activeMenu = ref<'courses' | 'my'>('courses')
 
 const searchName = ref('')
+const searchMy = ref('') 
 const courses = ref<Course[]>([])
 const selections = ref<Selection[]>([])
 const selectedCourseIds = ref<number[]>([])
@@ -167,6 +178,13 @@ const selectionColumns = [
     { title: '已选人数', slot: 'selectedCount' },
     { title: '操作', slot: 'operation' }
 ]
+
+const filteredSelections = computed(() => {
+  if (!searchMy.value.trim()) return selections.value
+  return selections.value.filter(s =>
+    s.course.name.includes(searchMy.value.trim())
+  )
+})
 
 onMounted(() => {
     if (!store.state.isloggedIn) {
