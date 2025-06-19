@@ -10,15 +10,35 @@ export class SelectionService {
   constructor(
     @InjectRepository(Selection)
     private readonly selectionRepository: Repository<Selection>,
+    @InjectRepository(Course)
+    private readonly courseRepo: Repository<Course>,
   ) {}
 
   async create(createSelectionDto: CreateSelectionDto): Promise<Selection|null> {
-    const selection = this.selectionRepository.create({
-      user:{id:createSelectionDto.userId} as User,
-      course:{id:createSelectionDto.courseId} as Course,
+    const course = await this.courseRepo.findOne({ where: { id: createSelectionDto.courseId } })
+    if (!course) throw new Error('课程不存在')
+
+    const existing = await this.selectionRepository.find({
+      where: { user: { id: createSelectionDto.userId } },
+      relations: ['course'],
+    })
+
+    for (const sel of existing) {
+      const c = sel.course
+      if (!(course.endDate < c.startDate || course.startDate > c.endDate)) {
+        if (course.dayOfWeek === c.dayOfWeek) {
+          if (!(course.endTime <= c.startTime || course.startTime >= c.endTime)) {
+            throw new Error('选课失败：时间冲突')
+          }
+        }
+      }
     }
-    );
-    return this.selectionRepository.save(selection);
+
+    const entity = this.selectionRepository.create({
+      user: { id: createSelectionDto.userId } as any,
+      course: { id: createSelectionDto.courseId } as any,
+    })
+    return this.selectionRepository.save(entity)
   }
 
   async findAll(): Promise<Selection[]> {

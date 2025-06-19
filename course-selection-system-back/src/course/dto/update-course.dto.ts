@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsDateString, IsIn, IsInt, IsNumber, IsOptional, IsString, Matches } from 'class-validator';
 export class UpdateCourseDto {
   @IsOptional()
   @IsString()
@@ -8,6 +8,12 @@ export class UpdateCourseDto {
   @IsString()
   description?: string;
 
+  @IsOptional() @IsInt() @IsIn([1, 2, 3, 4, 5, 6, 7]) dayOfWeek?: number
+  @IsOptional() @Matches(/^[0-2]\d:[0-5]\d$/) startTime?: string
+  @IsOptional() @Matches(/^[0-2]\d:[0-5]\d$/) endTime?: string
+  @IsOptional() @IsDateString() startDate?: string
+  @IsOptional() @IsDateString() endDate?: string
+  
   @IsOptional()
   @IsNumber()
   teacherId?: number;

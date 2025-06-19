@@ -58,6 +58,11 @@
                 <template #teacher="{ row }">
                     {{ row.teacherId?.name }}
                 </template>
+                <template #time="{ row }">
+                        {{ row.startDate }} - {{ row.endDate }}
+                        {{ row.startTime }} - {{ row.endTime }}
+                        周{{ ['一','二','三','四','五','六','日'][row.dayOfWeek - 1] }}
+                </template>
             </Table>
         </div>
 
@@ -72,6 +77,11 @@
                 <template #teacher="{ row }">{{ row.course?.teacherId.name }}</template>
                 <template #college="{ row }">
                     {{ row.course?.teacherId.college }}
+                </template>
+                <template #time="{ row }">
+                        {{ row.course?.startDate }} - {{ row.course?.endDate }}
+                        {{ row.course?.startTime }} - {{ row.course?.endTime }}
+                        周{{ ['一','二','三','四','五','六','日'][row.course?.dayOfWeek - 1] }}
                 </template>
                 <template #operation="{ row }">
                     <Button type="error" size="small" @click="onDeleteSelection(row.id)">退选</Button>
@@ -110,6 +120,11 @@ interface Course {
     name: string
     description: string
     teacherId
+    startDate: string
+    endDate: string
+    startTime: string
+    endTime: string
+    dayOfWeek: number
 }
 interface Selection {
     id: number
@@ -129,6 +144,7 @@ const courseColumns = [
     { title: '描述', key: 'description' },
     { title: '老师', slot: 'teacher' },
     { title: '学院', slot: 'college'},
+    { title: '上课时间', slot: 'time' },
     { title: '操作', slot: 'operation' }
 ]
 const selectionColumns = [
@@ -136,6 +152,7 @@ const selectionColumns = [
     { title: '描述', slot: 'courseDesc' },
     { title: '老师', slot: 'teacher' },
     { title: '学院', slot: 'college'},
+    { title: '上课时间', slot: 'time' },
     { title: '操作', slot: 'operation' }
 ]
 
@@ -241,7 +258,7 @@ async function onSelectCourse(courseId: number) {
         Message.success('选课成功')
         fetchSelections()
     } catch {
-        Message.error('选课失败')
+        Message.error('选课失败，请检查是否时间冲突')
     }
 }
 

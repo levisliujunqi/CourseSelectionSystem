@@ -66,7 +66,7 @@
                         <Input v-model="userForm.name" placeholder="请输入用户名" />
                     </FormItem>
                     <FormItem label="密码">
-                        <Input type="password" password v-model="userForm.password" placeholder="请输入密码，留空则不更改" />
+                        <Input type="password" password v-model="userForm.password" placeholder="请输入密码" />
                     </FormItem>
                     <FormItem label="学院">
                         <Input v-model="userForm.college" placeholder="请输入学院" />
@@ -103,9 +103,14 @@
                 <template #college="{ row }">
                     {{ row.teacherId.college }}
                 </template>
+                <template #time="{ row }">
+                        {{ row.startDate }} - {{ row.endDate }}
+                        {{ row.startTime }} - {{ row.endTime }}
+                        周{{ ['一','二','三','四','五','六','日'][row.dayOfWeek - 1] }}
+                </template>
                 <template #students="{ row }">
                     <Button type="default" @click="onShowStudents(row.id)">
-                        查看学生
+                        查看
                     </Button>
                 </template>
                 <template #operation="{ row }">
@@ -136,6 +141,29 @@
                     <FormItem label="教师">
                         <Input v-model="courseForm.teachername" placeholder="请输入教师姓名" />
                     </FormItem>
+                    <FormItem label="开始日期">
+                        <Input v-model="courseForm.startDate" type="date" placeholder="请选择开始日期" />
+                    </FormItem>
+                    <FormItem label="结束日期">
+                        <Input v-model="courseForm.endDate" type="date" placeholder="请选择结束 日期" />
+                    </FormItem>
+                    <FormItem label="开始时间">
+                        <TimePicker style="width:100%" type="time" v-model="courseForm.startTime" placeholder="请选择开始时间" format="HH:mm"/>
+                    </FormItem>
+                    <FormItem label="结束时间">
+                        <TimePicker style="width:100%" type="time" v-model="courseForm.endTime" placeholder="请选择结束时间" format="HH:mm"/>
+                    </FormItem>
+                    <FormItem label="上课星期">
+                        <Select v-model="courseForm.dayOfWeek" placeholder="请选择上课星期">
+                            <Option value='1'>星期一</Option>
+                            <Option value='2'>星期二</Option>
+                            <Option value='3'>星期三</Option>
+                            <Option value='4'>星期四</Option>
+                            <Option value='5'>星期五</Option>
+                            <Option value='6'>星期六</Option>
+                            <Option value='7'>星期日</Option>
+                        </Select>
+                    </FormItem>
                 </Form>
                 <template #footer>
                     <Button @click="showCourseModal = false">取消</Button>
@@ -165,11 +193,12 @@ import {
     Option,
     Message,
     MenuItem,
-    InputNumber
+    InputNumber,
+    TimePicker
 } from 'view-ui-plus'
 const showChangePwdModal = ref(false)
 const changePwdForm = reactive({
-    oldPwd:'',
+oldPwd:'',
   newPwd: '',
   confirmPwd: ''
 })
@@ -187,6 +216,11 @@ interface Course {
     name: string
     description: string
     teacherId
+    startDate: string
+    endDate: string
+    startTime: string
+    endTime: string
+    dayOfWeek: number
 }
 
 const router = useRouter()
@@ -202,7 +236,8 @@ const isEditUser = ref(false)
 const userForm = reactive({ id: 0, name: '', password: '', usertype: 'student' , college: ''})
 const showCourseModal = ref(false)
 const isEditCourse = ref(false)
-const courseForm = reactive({ id: 0, name: '', description: '', teachername: '', teacherId: 0 })
+const courseForm = reactive({ id: 0, name: '', description: '', teachername: '', teacherId: 0 ,
+    startDate: '', endDate: '', startTime: '', endTime: '', dayOfWeek: 1 })
 const showStudentModal = ref(false)
 const currentCourseId = ref(0)
 const userColumns = [
@@ -218,6 +253,7 @@ const courseColumns = [
     { title: '教师', slot: 'teacher' },
     { title: '学院', slot: 'college'},
     { title: '选课学生', slot: 'students' },
+    { title: '上课时间', slot: 'time' },
     { title: '操作', slot: 'operation' }
 ]
 
@@ -289,7 +325,7 @@ async function fetchCourses() {
 
 function onAddUser() {
     isEditUser.value = false
-    Object.assign(userForm, { id: 0, name: '', password: '', usertype: 'student' })
+    Object.assign(userForm, { id: 0, name: '', password: '', usertype: 'student', college: '' })
     showUserModal.value = true
 }
 
@@ -346,13 +382,15 @@ async function onDeleteUser(id: number) {
 
 function onAddCourse() {
     isEditCourse.value = false
-    Object.assign(courseForm, { id: 0, name: '', description: '', teachername: '' })
+    Object.assign(courseForm, { id: 0, name: '', description: '', teachername: '',
+        startDate: '', endDate: '', startTime: '', endTime: '', dayOfWeek: '1' })
     showCourseModal.value = true
 }
 
 function onEditCourse(row: Course) {
     isEditCourse.value = true
-    Object.assign(courseForm, { id: row.id, name: row.name, description: row.description, teachername: row.teacherId.name })
+    Object.assign(courseForm, { id: row.id, name: row.name, description: row.description, teachername: row.teacherId.name,
+        startDate: row.startDate, endDate: row.endDate, startTime: row.startTime, endTime: row.endTime, dayOfWeek: String(row.dayOfWeek) })
     showCourseModal.value = true
 }
 
@@ -399,7 +437,7 @@ async function submitCourse() {
         showCourseModal.value = false
         fetchCourses()
     } catch {
-        Message.error('课程操作失败')
+        Message.error('课程操作失败,请检查是否所有字段都非空')
     }
 }
 

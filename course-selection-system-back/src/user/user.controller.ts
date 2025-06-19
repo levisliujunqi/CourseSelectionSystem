@@ -46,7 +46,7 @@ export class UserController {
       throw new Error('Unauthorized');
     }
 
-    const old = await this.userService.findOne(id);
+    const old = await this.userService.findOne1(id);
     if (!old) {
       return null;
     }

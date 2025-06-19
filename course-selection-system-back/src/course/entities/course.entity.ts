@@ -11,10 +11,24 @@ export class Course {
 
   @Column('text')
   description: string;
+  @Column('int')//1(周一) ~7(周日)
+  dayOfWeek: number
 
-  @ManyToOne(() => User, user => user.courses , {
+  @Column({ length: 5 })//HH:mm
+  startTime: string
+
+  @Column({ length: 5 })
+  endTime: string
+
+  @Column('date')//yyyy-MM-dd
+  startDate: string
+
+  @Column('date')
+  endDate: string
+  @ManyToOne(() => User, user => user.courses, {
     eager: true,
-    onDelete: 'CASCADE'})
+    onDelete: 'CASCADE'
+  })
   teacherId: User;
 
   @OneToMany(() => Selection, selection => selection.course)

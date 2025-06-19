@@ -17,6 +17,11 @@ export class CourseService {
       name: createCourseDto.name,
       description: createCourseDto.description,
       teacherId: {id:createCourseDto.teacherId},
+      dayOfWeek: createCourseDto.dayOfWeek,
+      startTime: createCourseDto.startTime,
+      endTime: createCourseDto.endTime,
+      startDate: createCourseDto.startDate,
+      endDate: createCourseDto.endDate,
     });
     return this.courseRepository.save(course);
   }

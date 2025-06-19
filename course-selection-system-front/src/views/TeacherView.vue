@@ -55,9 +55,14 @@
                 <template #college="{ row }">
                     {{ row.teacherId.college }}
                 </template>
+                <template #time="{ row }">
+                        {{ row.startDate }} - {{ row.endDate }}
+                        {{ row.startTime }} - {{ row.endTime }}
+                        周{{ ['一','二','三','四','五','六','日'][row.dayOfWeek - 1] }}
+                </template>
                 <template #students="{ row }">
                     <Button type="default" @click="onShowStudents(row.id)">
-                        查看学生
+                        查看
                     </Button>
                 </template>
                 <template #operation="{ row }">
@@ -77,21 +82,43 @@
                 </template>
             </Modal>
 
-            <!-- 新增：添加/编辑课程 Modal -->
             <Modal v-model="showCourseModal" title="课程信息">
                 <Form :model="courseForm" label-width="80px">
-                <FormItem label="课程名">
-                    <Input v-model="courseForm.name" placeholder="请输入课程名" />
-                </FormItem>
-                <FormItem label="描述">
-                    <Input v-model="courseForm.description" placeholder="请输入描述" />
-                </FormItem>
+                    <FormItem label="课程名">
+                        <Input v-model="courseForm.name" placeholder="请输入课程名" />
+                    </FormItem>
+                    <FormItem label="描述">
+                        <Input v-model="courseForm.description" placeholder="请输入描述" />
+                    </FormItem>
+                    <FormItem label="开始日期">
+                        <Input v-model="courseForm.startDate" type="date" placeholder="请选择开始日期" />
+                    </FormItem>
+                    <FormItem label="结束日期">
+                        <Input v-model="courseForm.endDate" type="date" placeholder="请选择结束 日期" />
+                    </FormItem>
+                    <FormItem label="开始时间">
+                        <TimePicker style="width:100%" type="time" v-model="courseForm.startTime" placeholder="请选择开始时间" format="HH:mm"/>
+                    </FormItem>
+                    <FormItem label="结束时间">
+                        <TimePicker style="width:100%" type="time" v-model="courseForm.endTime" placeholder="请选择结束时间" format="HH:mm"/>
+                    </FormItem>
+                    <FormItem label="上课星期">
+                        <Select v-model="courseForm.dayOfWeek" placeholder="请选择上课星期">
+                            <Option value='1'>星期一</Option>
+                            <Option value='2'>星期二</Option>
+                            <Option value='3'>星期三</Option>
+                            <Option value='4'>星期四</Option>
+                            <Option value='5'>星期五</Option>
+                            <Option value='6'>星期六</Option>
+                            <Option value='7'>星期日</Option>
+                        </Select>
+                    </FormItem>
                 </Form>
                 <template #footer>
-                <Button @click="showCourseModal = false">取消</Button>
-                <Button type="primary" @click="submitCourse">
-                    {{ isEditCourse ? '保存' : '添加' }}
-                </Button>
+                    <Button @click="showCourseModal = false">取消</Button>
+                    <Button type="primary" @click="submitCourse">
+                        {{ isEditCourse ? '保存' : '添加' }}
+                    </Button>
                 </template>
             </Modal>
         </div>
@@ -115,7 +142,8 @@ import {
   Option,
   Message,
   MenuItem,
-  InputNumber
+  InputNumber,
+  TimePicker
 } from 'view-ui-plus'
 const showChangePwdModal = ref(false)
 const changePwdForm = reactive({
@@ -135,6 +163,11 @@ interface Course {
   name: string
   description: string
   teacherId
+    startDate: string
+    endDate: string
+    startTime: string
+    endTime: string
+    dayOfWeek: number
 }
 
 const router = useRouter()
@@ -148,7 +181,7 @@ const showUserModal = ref(false)
 const isEditUser = ref(false)
 const showCourseModal = ref(false)
 const isEditCourse = ref(false)
-const courseForm = reactive({ id: 0, name: '', description: '', teacherId: 0 })
+const courseForm = reactive({ id: 0, name: '', description: '', teacherId: 0,startDate: '', endDate: '', startTime: '', endTime: '', dayOfWeek: 1 })
 const showStudentModal = ref(false)
 const currentCourseId = ref(0)
 
@@ -165,6 +198,7 @@ const courseColumns = [
     { title: '教师', slot: 'teacher' },
     { title: '学院', slot: 'college'},
     { title: '选课学生', slot: 'students' },
+    { title: '上课时间', slot: 'time' },
     { title: '操作', slot: 'operation' }
 ]
 
@@ -201,8 +235,7 @@ async function fetchCourses() {
         }
         const data=res.data
         const data1=data.filter((c: Course) => {
-            const tid = c.teacherId.id
-            return tid == store.state.userid
+            return c.teacherId.id == store.state.userid
         })
         Message.success('获取课程列表成功')
         courses.value = data1
@@ -213,13 +246,15 @@ async function fetchCourses() {
 
 function onAddCourse() {
     isEditCourse.value = false
-    Object.assign(courseForm, { id: 0, name: '', description: '', teacherId: store.state.userid })
+    Object.assign(courseForm, { id: 0, name: '', description: '', teacherId: store.state.userid,
+        startDate: '', endDate: '', startTime: '', endTime: '', dayOfWeek: '1' })
     showCourseModal.value = true
 }
 
 function onEditCourse(row: Course) {
     isEditCourse.value = true
-    Object.assign(courseForm, {id:row.id, name: row.name, description: row.description, teacherId: row.teacherId.id})
+    Object.assign(courseForm, {id:row.id, name: row.name, description: row.description, teacherId: row.teacherId.id,
+        startDate: row.startDate, endDate: row.endDate, startTime: row.startTime, endTime: row.endTime, dayOfWeek: String(row.dayOfWeek) })
     showCourseModal.value = true
 }
 
@@ -250,7 +285,7 @@ async function submitCourse() {
         showCourseModal.value = false
         fetchCourses()
     } catch {
-        Message.error('课程操作失败')
+        Message.error('课程操作失败,请检查是否所有字段都非空')
     }
 }
 
