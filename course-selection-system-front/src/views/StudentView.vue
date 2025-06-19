@@ -52,6 +52,9 @@
                         {{ selectedCourseIds.includes(row.id) ? '已选' : '选课' }}
                     </Button>
                 </template>
+                <template #college="{ row }">
+                    {{ row.teacherId.college }}
+                </template>
                 <template #teacher="{ row }">
                     {{ row.teacherId?.name }}
                 </template>
@@ -67,6 +70,9 @@
                 <template #courseName="{ row }">{{ row.course?.name }}</template>
                 <template #courseDesc="{ row }">{{ row.course?.description }}</template>
                 <template #teacher="{ row }">{{ row.course?.teacherId.name }}</template>
+                <template #college="{ row }">
+                    {{ row.course?.teacherId.college }}
+                </template>
                 <template #operation="{ row }">
                     <Button type="error" size="small" @click="onDeleteSelection(row.id)">退选</Button>
                 </template>
@@ -122,12 +128,14 @@ const courseColumns = [
     { title: '课程名', key: 'name' },
     { title: '描述', key: 'description' },
     { title: '老师', slot: 'teacher' },
+    { title: '学院', slot: 'college'},
     { title: '操作', slot: 'operation' }
 ]
 const selectionColumns = [
     { title: '课程名', slot: 'courseName' },
     { title: '描述', slot: 'courseDesc' },
     { title: '老师', slot: 'teacher' },
+    { title: '学院', slot: 'college'},
     { title: '操作', slot: 'operation' }
 ]
 

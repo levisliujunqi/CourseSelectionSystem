@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { Selection } from '../../selection/entities/selection.entity';
 import { Course } from '../../course/entities/course.entity';
+import { Cipher } from 'crypto';
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
@@ -20,4 +21,7 @@ export class User {
 
   @Column()
   usertype: 'student' | 'teacher' | 'admin';
+
+  @Column()
+  college:string;
 }

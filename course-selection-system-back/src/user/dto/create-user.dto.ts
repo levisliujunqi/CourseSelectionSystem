@@ -9,4 +9,7 @@ export class CreateUserDto {
 
   @IsString()
   usertype: 'student' | 'teacher' | 'admin';
+
+  @IsString()
+  college: string;
 }

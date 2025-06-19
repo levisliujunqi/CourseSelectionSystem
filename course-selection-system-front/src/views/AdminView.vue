@@ -66,7 +66,10 @@
                         <Input v-model="userForm.name" placeholder="请输入用户名" />
                     </FormItem>
                     <FormItem label="密码">
-                        <Input type="password" password v-model="userForm.password" placeholder="请输入密码" />
+                        <Input type="password" password v-model="userForm.password" placeholder="请输入密码，留空则不更改" />
+                    </FormItem>
+                    <FormItem label="学院">
+                        <Input v-model="userForm.college" placeholder="请输入学院" />
                     </FormItem>
                     <FormItem label="角色">
                         <Select v-model="userForm.usertype" placeholder="请选择角色">
@@ -96,6 +99,9 @@
             <Table :columns="courseColumns" :data="courses" row-key="id" stripe>
                 <template #teacher="{ row }">
                     {{ row.teacherId.name }}
+                </template>
+                <template #college="{ row }">
+                    {{ row.teacherId.college }}
                 </template>
                 <template #students="{ row }">
                     <Button type="default" @click="onShowStudents(row.id)">
@@ -169,6 +175,7 @@ interface User {
     name: string
     password: string
     usertype: string
+    college: string
 }
 
 interface Course {
@@ -188,7 +195,7 @@ const courses = ref<Course[]>([])
 const studentList = ref<User[]>([])
 const showUserModal = ref(false)
 const isEditUser = ref(false)
-const userForm = reactive({ id: 0, name: '', password: '', usertype: 'student' })
+const userForm = reactive({ id: 0, name: '', password: '', usertype: 'student' , college: ''})
 const showCourseModal = ref(false)
 const isEditCourse = ref(false)
 const courseForm = reactive({ id: 0, name: '', description: '', teachername: '', teacherId: 0 })
@@ -197,6 +204,8 @@ const showStudentModal = ref(false)
 const userColumns = [
     { title: '用户名', key: 'name' },
     { title: '角色', key: 'usertype' },
+    { title: '用户类型', key: 'usertype' },
+    { title: '学院', key: 'college' },
     { title: '操作', slot: 'operation' }
 ]
 
@@ -204,6 +213,7 @@ const courseColumns = [
     { title: '课程名', key: 'name' },
     { title: '描述', key: 'description' },
     { title: '教师', slot: 'teacher' },
+    { title: '学院', slot: 'college'},
     { title: '选课学生', slot: 'students' },
     { title: '操作', slot: 'operation' }
 ]
@@ -282,17 +292,23 @@ function onAddUser() {
 
 function onEditUser(row: User) {
     isEditUser.value = true
-    Object.assign(userForm, { id: row.id, name: row.name, password: row.password, usertype: row.usertype })
+    Object.assign(userForm, { id: row.id, name: row.name, password: row.password, usertype: row.usertype ,college: row.college})
     showUserModal.value = true
 }
 
 async function submitUser() {
     try {
         if (isEditUser.value) {
+            let res
+            if(userForm.password==""){
+                const {password,...res}=userForm;
+            }else{
+                res=userForm
+            }
             await api.put(`/users/${userForm.id}`, {
                 username: store.state.name,
                 userpassword: store.state.password,
-                ...userForm
+                ...res
             })
             Message.success('修改用户成功')
         } else {

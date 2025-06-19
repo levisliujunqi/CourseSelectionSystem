@@ -60,6 +60,7 @@ export class UserController {
         name: updateUserDto.name ?? old.name,
         password: updateUserDto.password ?? old.password,
         usertype: updateUserDto.usertype,
+        college: updateUserDto.college ?? old.college
       };
       return this.userService.create(createDto);
     }
