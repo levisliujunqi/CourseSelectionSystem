@@ -22,6 +22,8 @@ export class CourseService {
       endTime: createCourseDto.endTime,
       startDate: createCourseDto.startDate,
       endDate: createCourseDto.endDate,
+      location: createCourseDto.location,
+      capacity: createCourseDto.capacity,
     });
     return this.courseRepository.save(course);
   }

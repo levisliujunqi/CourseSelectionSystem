@@ -11,20 +11,28 @@ export class Course {
 
   @Column('text')
   description: string;
+
   @Column('int')//1(周一) ~7(周日)
-  dayOfWeek: number
+  dayOfWeek: number;
 
   @Column({ length: 5 })//HH:mm
-  startTime: string
+  startTime: string;
 
   @Column({ length: 5 })
-  endTime: string
+  endTime: string;
 
   @Column('date')//yyyy-MM-dd
-  startDate: string
+  startDate: string;
 
   @Column('date')
-  endDate: string
+  endDate: string;
+
+  @Column({ length: 200 })
+  location: string;
+
+  @Column('int')
+  capacity: number;
+
   @ManyToOne(() => User, user => user.courses, {
     eager: true,
     onDelete: 'CASCADE'

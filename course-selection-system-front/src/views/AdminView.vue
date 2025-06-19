@@ -104,8 +104,8 @@
                     {{ row.teacherId.college }}
                 </template>
                 <template #time="{ row }">
-                        {{ row.startDate }} - {{ row.endDate }}
-                        {{ row.startTime }} - {{ row.endTime }}
+                    {{ row.startDate }} - {{ row.endDate }}
+                    {{ row.startTime }} - {{ row.endTime }}
                         周{{ ['一','二','三','四','五','六','日'][row.dayOfWeek - 1] }}
                 </template>
                 <template #students="{ row }">
@@ -164,6 +164,12 @@
                             <Option value='7'>星期日</Option>
                         </Select>
                     </FormItem>
+                    <FormItem label="上课地点">
+                        <Input v-model="courseForm.location" placeholder="请输入上课地点" />
+                    </FormItem>
+                    <FormItem label="人数限制">
+                        <InputNumber v-model="courseForm.capacity" :min="1" placeholder="请输入人数上限" />
+                    </FormItem>
                 </Form>
                 <template #footer>
                     <Button @click="showCourseModal = false">取消</Button>
@@ -199,8 +205,8 @@ import {
 const showChangePwdModal = ref(false)
 const changePwdForm = reactive({
 oldPwd:'',
-  newPwd: '',
-  confirmPwd: ''
+    newPwd: '',
+    confirmPwd: ''
 })
 
 interface User {
@@ -221,6 +227,8 @@ interface Course {
     startTime: string
     endTime: string
     dayOfWeek: number
+    location: string
+    capacity: number
 }
 
 const router = useRouter()
@@ -236,8 +244,10 @@ const isEditUser = ref(false)
 const userForm = reactive({ id: 0, name: '', password: '', usertype: 'student' , college: ''})
 const showCourseModal = ref(false)
 const isEditCourse = ref(false)
-const courseForm = reactive({ id: 0, name: '', description: '', teachername: '', teacherId: 0 ,
-    startDate: '', endDate: '', startTime: '', endTime: '', dayOfWeek: 1 })
+const courseForm = reactive({
+    id: 0, name: '', description: '', teachername: '', teacherId: 0,
+    startDate: '', endDate: '', startTime: '', endTime: '', dayOfWeek: 1,location: '', capacity: 30
+})
 const showStudentModal = ref(false)
 const currentCourseId = ref(0)
 const userColumns = [
@@ -251,9 +261,11 @@ const courseColumns = [
     { title: '课程名', key: 'name' },
     { title: '描述', key: 'description' },
     { title: '教师', slot: 'teacher' },
-    { title: '学院', slot: 'college'},
-    { title: '选课学生', slot: 'students' },
+    { title: '学院', slot: 'college' },
     { title: '上课时间', slot: 'time' },
+    { title: '上课地点', key: 'location' },
+    { title: '人数限制', key: 'capacity' },
+    { title: '选课学生', slot: 'students' },
     { title: '操作', slot: 'operation' }
 ]
 
@@ -382,15 +394,19 @@ async function onDeleteUser(id: number) {
 
 function onAddCourse() {
     isEditCourse.value = false
-    Object.assign(courseForm, { id: 0, name: '', description: '', teachername: '',
-        startDate: '', endDate: '', startTime: '', endTime: '', dayOfWeek: '1' })
+    Object.assign(courseForm, {
+        id: 0, name: '', description: '', teachername: '',
+        startDate: '', endDate: '', startTime: '', endTime: '', dayOfWeek: '1', location: '', capacity: 30
+    })
     showCourseModal.value = true
 }
 
 function onEditCourse(row: Course) {
     isEditCourse.value = true
-    Object.assign(courseForm, { id: row.id, name: row.name, description: row.description, teachername: row.teacherId.name,
-        startDate: row.startDate, endDate: row.endDate, startTime: row.startTime, endTime: row.endTime, dayOfWeek: String(row.dayOfWeek) })
+    Object.assign(courseForm, {
+        id: row.id, name: row.name, description: row.description, teachername: row.teacherId.name,
+        startDate: row.startDate, endDate: row.endDate, startTime: row.startTime, endTime: row.endTime, dayOfWeek: String(row.dayOfWeek),location: row.location, capacity: row.capacity
+    })
     showCourseModal.value = true
 }
 
@@ -476,31 +492,31 @@ async function onShowStudents(courseId: number) {
 }
 
 async function submitChangePwd() {
-  if (changePwdForm.newPwd !== changePwdForm.confirmPwd) {
-    Message.error('两次输入的密码不一致')
-    return
-  }
-  try {
-    await api.put(
-      `/users/${store.state.userid}`,
-      {
-        password: changePwdForm.newPwd,
-        username: store.state.name,
-        userpassword: changePwdForm.oldPwd
-      }
-    )
-    Message.success('密码修改成功')
-    showChangePwdModal.value = false
-    store.commit('setPassword', changePwdForm.newPwd)
-    changePwdForm.oldPwd = ''
-    changePwdForm.newPwd = ''
-    changePwdForm.confirmPwd = ''
-    store.commit('clearCredentials')
-    router.push('/login')
-    Message.success('请重新登陆')
-  } catch {
-    Message.error('密码修改失败')
-  }
+    if (changePwdForm.newPwd !== changePwdForm.confirmPwd) {
+        Message.error('两次输入的密码不一致')
+        return
+    }
+    try {
+        await api.put(
+            `/users/${store.state.userid}`,
+            {
+                password: changePwdForm.newPwd,
+                username: store.state.name,
+                userpassword: changePwdForm.oldPwd
+            }
+        )
+        Message.success('密码修改成功')
+        showChangePwdModal.value = false
+        store.commit('setPassword', changePwdForm.newPwd)
+        changePwdForm.oldPwd = ''
+        changePwdForm.newPwd = ''
+        changePwdForm.confirmPwd = ''
+        store.commit('clearCredentials')
+        router.push('/login')
+        Message.success('请重新登陆')
+    } catch {
+        Message.error('密码修改失败')
+    }
 }
 
 function onselect(name: string) {

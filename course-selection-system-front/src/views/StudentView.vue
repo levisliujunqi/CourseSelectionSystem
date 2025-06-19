@@ -83,6 +83,8 @@
                         {{ row.course?.startTime }} - {{ row.course?.endTime }}
                         周{{ ['一','二','三','四','五','六','日'][row.course?.dayOfWeek - 1] }}
                 </template>
+                <template #location="{ row }">{{ row.course?.location }}</template>
+                <template #capacity="{ row }">{{ row.course?.capacity }}</template>
                 <template #operation="{ row }">
                     <Button type="error" size="small" @click="onDeleteSelection(row.id)">退选</Button>
                 </template>
@@ -125,6 +127,8 @@ interface Course {
     startTime: string
     endTime: string
     dayOfWeek: number
+    location: string
+    capacity: number
 }
 interface Selection {
     id: number
@@ -145,6 +149,8 @@ const courseColumns = [
     { title: '老师', slot: 'teacher' },
     { title: '学院', slot: 'college'},
     { title: '上课时间', slot: 'time' },
+    { title: '上课地点', key: 'location' },
+    { title: '人数限制', key: 'capacity' },
     { title: '操作', slot: 'operation' }
 ]
 const selectionColumns = [
@@ -153,6 +159,8 @@ const selectionColumns = [
     { title: '老师', slot: 'teacher' },
     { title: '学院', slot: 'college'},
     { title: '上课时间', slot: 'time' },
+    { title: '上课地点', slot: 'location' },
+    { title: '人数限制', slot: 'capacity' },
     { title: '操作', slot: 'operation' }
 ]
 
