@@ -46,12 +46,10 @@
         <div v-if="activeMenu === 'user'" style="margin-top:16px">
             <Space style="margin-bottom:12px">
                 <Button type="default" icon="ios-refresh" @click="onRefresh">刷新</Button>
-                <Input v-model="searchuserName" placeholder="输入姓名搜索" style="width:200px" />
-                <Button type="primary" @click="fetchUsers">搜索</Button>
+                <Input v-model="searchUserName" placeholder="输入姓名搜索" style="width:200px" />
                 <Button type="primary" @click="onAddUser">添加用户</Button>
             </Space>
-
-            <Table :columns="userColumns" :data="users" row-key="id" stripe>
+            <Table :columns="userColumns" :data="filteredUsers" row-key="id" stripe>
                 <template #operation="{ row }">
                     <Button type="info" @click="onEditUser(row)">编辑</Button>
                     <Button type="error" @click="onDeleteUser(row.id)" style="margin-left:8px">
@@ -91,12 +89,11 @@
         <div v-else-if="activeMenu === 'course'" style="margin-top:16px">
             <Space style="margin-bottom:12px">
                 <Button type="default" icon="ios-refresh" @click="onRefresh">刷新</Button>
-                <Input v-model="searchName" placeholder="输入课程名搜索" style="width:200px" />
-                <Button type="primary" @click="fetchCourses">搜索</Button>
+                <Input v-model="searchCourseName" placeholder="输入课程名搜索" style="width:200px" />
                 <Button type="primary" @click="onAddCourse">添加课程</Button>
             </Space>
 
-            <Table :columns="courseColumns" :data="courses" row-key="id" stripe>
+            <Table :columns="courseColumns" :data="filteredCourses" row-key="id" stripe>
                 <template #teacher="{ row }">
                     {{ row.teacherId.name }}
                 </template>
@@ -183,7 +180,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import api from '@/api'
 import store from '@/store'
 import { useRouter } from 'vue-router'
@@ -235,8 +232,8 @@ interface Course {
 const router = useRouter()
 const activeMenu = ref<'user' | 'course'>('user')
 
-const searchName = ref('')
-const searchuserName = ref('')
+const searchUserName = ref('')
+const searchCourseName = ref('')
 const users = ref<User[]>([])
 const courses = ref<Course[]>([])
 const studentList = ref<{ selectionId: number; studentName: string }[]>([])
@@ -285,24 +282,21 @@ onMounted(() => {
     fetchCourses()
 })
 
+const filteredUsers = computed(() =>
+  users.value.filter(u => u.name.includes(searchUserName.value.trim()))
+)
+const filteredCourses = computed(() =>
+  courses.value.filter(c => c.name.includes(searchCourseName.value.trim()))
+)
+
 async function fetchUsers() {
     try {
-        let res
-        if (searchuserName.value.trim()) {
-            res = await api.get(`/users/search/${searchuserName.value}`, {
+        const res = await api.get('/users', {
                 params: {
                     username: store.state.name,
                     userpassword: store.state.password
                 }
             })
-        } else {
-            res = await api.get('/users', {
-                params: {
-                    username: store.state.name,
-                    userpassword: store.state.password
-                }
-            })
-        }
         const data = res.data
         users.value = data
         Message.success('获取用户列表成功')
@@ -313,22 +307,12 @@ async function fetchUsers() {
 
 async function fetchCourses() {
     try {
-        let res
-        if (searchName.value.trim()) {
-            res = await api.get(`/courses/search/${searchName.value}`, {
-                params: {
-                    username: store.state.name,
-                    userpassword: store.state.password
-                }
-            })
-        } else {
-            res = await api.get('/courses', {
-                params: {
-                    username: store.state.name,
-                    userpassword: store.state.password
-                }
-            })
-        }
+        const res = await api.get('/courses', {
+            params: {
+                username: store.state.name,
+                userpassword: store.state.password
+            }
+        })
         const data = res.data
         Message.success('获取课程列表成功')
         courses.value = data

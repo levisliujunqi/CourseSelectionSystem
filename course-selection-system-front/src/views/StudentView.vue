@@ -43,9 +43,8 @@
             <Space style="margin-bottom:12px">
                 <Button icon="ios-refresh" @click="fetchCourses">刷新</Button>
                 <Input v-model="searchName" placeholder="输入课程名搜索" style="width:200px" />
-                <Button type="primary" @click="fetchCourses">搜索</Button>
             </Space>
-            <Table :columns="courseColumns" :data="courses" row-key="id" stripe>
+            <Table :columns="courseColumns" :data="filteredcourses" row-key="id" stripe>
                 <template #operation="{ row }">
                     <Button type="primary" size="small" :disabled="selectedCourseIds.includes(row.id) || row.selectedCount >= row.capacity"
                         @click="onSelectCourse(row.id)">
@@ -186,6 +185,13 @@ const filteredSelections = computed(() => {
   )
 })
 
+const filteredcourses = computed(() => {
+  if (!searchName.value.trim()) return courses.value
+  return courses.value.filter(s =>
+    s.name.includes(searchName.value.trim())
+  )
+})
+
 onMounted(() => {
     if (!store.state.isloggedIn) {
         router.push('/login')
@@ -241,6 +247,7 @@ function onSelect(name: string) {
 
 async function fetchCourses() {
     try {
+        /*
         let res
         if (searchName.value.trim()) {
             res = await api.get(`/courses/search/${searchName.value}`, {
@@ -249,14 +256,14 @@ async function fetchCourses() {
                     userpassword: store.state.password
                 }
             })
-        } else {
-            res = await api.get('/courses', {
+        } else {*/
+            const res = await api.get('/courses', {
                 params: {
                     username: store.state.name,
                     userpassword: store.state.password
                 }
             })
-        }
+        //}
         courses.value = res.data
         Message.success('获取课程列表成功')
     } catch {

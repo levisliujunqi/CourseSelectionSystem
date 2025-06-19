@@ -44,11 +44,10 @@
             <Space style="margin-bottom:12px">
                 <Button type="default" icon="ios-refresh" @click="onRefresh">刷新</Button>
                 <Input v-model="searchName" placeholder="输入课程名搜索" style="width:200px" />
-                <Button type="primary" @click="fetchCourses">搜索</Button>
                 <Button type="primary" @click="onAddCourse">添加课程</Button>
             </Space>
 
-            <Table :columns="courseColumns" :data="courses" row-key="id" stripe>
+            <Table :columns="courseColumns" :data="filteredCourses" row-key="id" stripe>
                 <template #teacher="{ row }">
                     {{ row.teacherId.name }}
                 </template>
@@ -132,7 +131,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import api from '@/api'
 import store from '@/store'
 import { useRouter } from 'vue-router'
@@ -229,22 +228,12 @@ onMounted(() => {
 
 async function fetchCourses() {
     try {
-        let res
-        if (searchName.value.trim()) {
-            res = await api.get(`/courses/search/${searchName.value}`, {
+        const res = await api.get('/courses', {
                 params: {
                     username: store.state.name,
                     userpassword: store.state.password
                 }
             })
-        } else {
-            res = await api.get('/courses', {
-                params: {
-                    username: store.state.name,
-                    userpassword: store.state.password
-                }
-            })
-        }
         const data=res.data
         const data1=data.filter((c: Course) => {
             return c.teacherId.id == store.state.userid
@@ -255,6 +244,10 @@ async function fetchCourses() {
         Message.error('获取课程列表失败')
     }
 }
+
+const filteredCourses = computed(() =>
+  courses.value.filter(c => c.name.includes(searchName.value.trim()))
+)
 
 function onAddCourse() {
     isEditCourse.value = false
