@@ -55,7 +55,7 @@ export class SelectionController {
   async remove(@Param('id',ParseIntPipe) id: number,@Req() req): Promise<void> {
     const user=req.user;
     const result: Selection|null = await this.selectionService.findOne(id);
-    if (!user || (user.usertype !== 'admin' && user.id !== result?.user.id) &&user.id!== result?.course.teacherId) {
+    if (!user || (user.usertype !== 'admin' && user.id !== result?.user.id&&user.id!== result?.course.teacherId)) {
       throw new Error('Unauthorized');
     }
     return this.selectionService.remove(id);

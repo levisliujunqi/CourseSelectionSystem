@@ -65,7 +65,11 @@
 
             <!-- 学生列表弹窗 -->
             <Modal v-model="showStudentModal" title="选课学生" height="300px">
-                <Table :columns="studentColumns" :data="studentList" row-key="id" size="small" />
+                <Table :columns="studentColumns" :data="studentList" row-key="id" size="small">
+                    <template #operation="{ row }">
+                        <Button type="error" @click="onDeleteSelection(row.selectionId)">退选</Button>
+                    </template>
+                </Table>
                 <template #footer>
                     <Button @click="showStudentModal = false">关闭</Button>
                 </template>
@@ -137,13 +141,14 @@ const activeMenu = ref('course')
 const searchName = ref('') 
 const users = ref<User[]>([])
 const courses = ref<Course[]>([])
-const studentList = ref<User[]>([])
+const studentList = ref<{ selectionId: number; studentName: string }[]>([])
 const showUserModal = ref(false)
 const isEditUser = ref(false)
 const showCourseModal = ref(false)
 const isEditCourse = ref(false)
 const courseForm = reactive({ id: 0, name: '', description: '', teacherId: 0 })
 const showStudentModal = ref(false)
+const currentCourseId = ref(0)
 
 const userColumns = [
     { title: 'ID', key: 'id' },
@@ -162,8 +167,8 @@ const courseColumns = [
 ]
 
 const studentColumns = [
-    { title: '学生ID', key: 'id' },
-    { title: '学生姓名', key: 'name' }
+    { title: '学生姓名', key: 'studentname' },
+    { title: '操作', slot: 'operation' }
 ]
 
 onMounted(() => {
@@ -264,13 +269,17 @@ async function onDeleteCourse(id: number) {
 
 async function onShowStudents(courseId: number) {
     try {
+        currentCourseId.value = courseId
         const { data } = await api.get(`/selections/course/${courseId}`, {
             params: {
                 username: store.state.name,
                 userpassword: store.state.password
             }
         })
-        studentList.value = data.map((sel: any) => sel.user)
+        studentList.value = data.map((sel: any) => ({
+            studentname: sel.user.name,
+            selectionId: sel.id
+        }))
         showStudentModal.value = true
     } catch {
         Message.error('获取学生列表失败')
@@ -329,6 +338,18 @@ function onselect(name: string) {
 function onRefresh() {
     if (activeMenu.value === 'course') {
         fetchCourses()
+    }
+}
+
+async function onDeleteSelection(id: number) {
+    try {
+        await api.delete(`/selections/${id}`, {
+            data: { username: store.state.name, userpassword: store.state.password }
+        })
+        onShowStudents(currentCourseId.value);
+        Message.success('退选成功')
+    } catch {
+        Message.error('退选失败')
     }
 }
 </script>
