@@ -41,4 +41,7 @@ export class Course {
 
   @OneToMany(() => Selection, selection => selection.course)
   selections: Selection[];
+
+  @Column('int', { default: 0 })
+  selectedCount: number;
 }
