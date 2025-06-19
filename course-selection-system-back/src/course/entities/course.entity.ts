@@ -15,7 +15,7 @@ export class Course {
   @ManyToOne(() => User, user => user.courses , {
     eager: true,
     onDelete: 'CASCADE'})
-  teacherId: number;
+  teacherId: User;
 
   @OneToMany(() => Selection, selection => selection.course)
   selections: Selection[];

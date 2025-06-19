@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository } from 'typeorm';
+import { DeepPartial, Like, Repository } from 'typeorm';
 import { Course } from './entities/course.entity';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
@@ -13,7 +13,11 @@ export class CourseService {
   ) {}
 
   create(createCourseDto: CreateCourseDto): Promise<Course> {
-    const course = this.courseRepository.create(createCourseDto);
+    const course = this.courseRepository.create({
+      name: createCourseDto.name,
+      description: createCourseDto.description,
+      teacherId: {id:createCourseDto.teacherId},
+    });
     return this.courseRepository.save(course);
   }
 
@@ -25,9 +29,14 @@ export class CourseService {
     return this.courseRepository.findOneBy({ id });
   }
 
-  async update(id: number, updateCourseDto: UpdateCourseDto): Promise<Course|null> {
-    await this.courseRepository.update(id, updateCourseDto);
-    return this.findOne(id);
+  async update(id: number,updateCourseDto: UpdateCourseDto,): Promise<Course|null> {
+    const { teacherId, ...rest } = updateCourseDto
+    const payload: DeepPartial<Course> = { ...rest }
+    if (teacherId !== undefined) {
+      payload.teacherId = { id: teacherId } as any
+    }
+    await this.courseRepository.update(id, payload)
+    return this.findOne(id)
   }
 
   async remove(id: number): Promise<void> {

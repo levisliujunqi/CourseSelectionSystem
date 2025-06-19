@@ -207,7 +207,6 @@ const showStudentModal = ref(false)
 const currentCourseId = ref(0)
 const userColumns = [
     { title: '用户名', key: 'name' },
-    { title: '角色', key: 'usertype' },
     { title: '用户类型', key: 'usertype' },
     { title: '学院', key: 'college' },
     { title: '操作', slot: 'operation' }
