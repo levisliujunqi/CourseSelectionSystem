@@ -49,8 +49,11 @@
             </Space>
 
             <Table :columns="courseColumns" :data="courses" row-key="id" stripe>
-                <template #teacherId="{ row }">
-                    {{ row.teacherId.id }}
+                <template #teacher="{ row }">
+                    {{ row.teacherId.name }}
+                </template>
+                <template #college="{ row }">
+                    {{ row.teacherId.college }}
                 </template>
                 <template #students="{ row }">
                     <Button type="default" @click="onShowStudents(row.id)">
@@ -63,7 +66,6 @@
                 </template>
             </Table>
 
-            <!-- 学生列表弹窗 -->
             <Modal v-model="showStudentModal" title="选课学生" height="300px">
                 <Table :columns="studentColumns" :data="studentList" row-key="id" size="small">
                     <template #operation="{ row }">
@@ -158,12 +160,12 @@ const userColumns = [
 ]
 
 const courseColumns = [
-  { title: 'ID', key: 'id' },
-  { title: '课程名', key: 'name' },
-  { title: '描述', key: 'description' },
-  { title: '教师ID', slot: 'teacherId' },
-  { title: '选课学生', slot: 'students' },
-  { title: '操作', slot: 'operation' }
+    { title: '课程名', key: 'name' },
+    { title: '描述', key: 'description' },
+    { title: '教师', slot: 'teacher' },
+    { title: '学院', slot: 'college'},
+    { title: '选课学生', slot: 'students' },
+    { title: '操作', slot: 'operation' }
 ]
 
 const studentColumns = [
