@@ -47,9 +47,9 @@
             </Space>
             <Table :columns="courseColumns" :data="courses" row-key="id" stripe>
                 <template #operation="{ row }">
-                    <Button type="primary" size="small" :disabled="selectedCourseIds.includes(row.id)"
+                    <Button type="primary" size="small" :disabled="selectedCourseIds.includes(row.id) || row.selectedCount >= row.capacity"
                         @click="onSelectCourse(row.id)">
-                        {{ selectedCourseIds.includes(row.id) ? '已选' : '选课' }}
+                        {{ selectedCourseIds.includes(row.id) ? '已选' : (row.selectedCount >= row.capacity?'已满':'选课') }}
                     </Button>
                 </template>
                 <template #college="{ row }">
@@ -268,6 +268,7 @@ async function onSelectCourse(courseId: number) {
             userpassword: store.state.password
         })
         Message.success('选课成功')
+        fetchCourses()
         fetchSelections()
     } catch {
         Message.error('选课失败，请检查是否时间冲突')
