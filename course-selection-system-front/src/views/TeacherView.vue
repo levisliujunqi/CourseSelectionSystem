@@ -113,6 +113,12 @@
                             <Option value='7'>星期日</Option>
                         </Select>
                     </FormItem>
+                    <FormItem label="上课地点">
+                        <Input v-model="courseForm.location" placeholder="请输入上课地点" />
+                    </FormItem>
+                    <FormItem label="人数限制">
+                        <InputNumber v-model="courseForm.capacity" :min="1" placeholder="请输入人数上限" />
+                    </FormItem>
                 </Form>
                 <template #footer>
                     <Button @click="showCourseModal = false">取消</Button>
