@@ -229,6 +229,7 @@ interface Course {
     dayOfWeek: number
     location: string
     capacity: number
+    selectionCount: number
 }
 
 const router = useRouter()
@@ -265,6 +266,7 @@ const courseColumns = [
     { title: '上课时间', slot: 'time' },
     { title: '上课地点', key: 'location' },
     { title: '人数限制', key: 'capacity' },
+    { title: '已选人数', key: 'selectedCount' },
     { title: '选课学生', slot: 'students' },
     { title: '操作', slot: 'operation' }
 ]

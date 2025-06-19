@@ -168,6 +168,9 @@ interface Course {
     startTime: string
     endTime: string
     dayOfWeek: number
+    location: string
+    capacity: number
+    selectionCount: number
 }
 
 const router = useRouter()
@@ -181,7 +184,7 @@ const showUserModal = ref(false)
 const isEditUser = ref(false)
 const showCourseModal = ref(false)
 const isEditCourse = ref(false)
-const courseForm = reactive({ id: 0, name: '', description: '', teacherId: 0,startDate: '', endDate: '', startTime: '', endTime: '', dayOfWeek: 1 })
+const courseForm = reactive({ id: 0, name: '', description: '', teacherId: 0,startDate: '', endDate: '', startTime: '', endTime: '', dayOfWeek: 1, location: '', capacity: 30 })
 const showStudentModal = ref(false)
 const currentCourseId = ref(0)
 
@@ -199,6 +202,9 @@ const courseColumns = [
     { title: '学院', slot: 'college'},
     { title: '选课学生', slot: 'students' },
     { title: '上课时间', slot: 'time' },
+    { title: '上课地点', key: 'location' },
+    { title: '人数限制', key: 'capacity' },
+    { title: '已选人数', key: 'selectedCount' },
     { title: '操作', slot: 'operation' }
 ]
 
@@ -247,14 +253,14 @@ async function fetchCourses() {
 function onAddCourse() {
     isEditCourse.value = false
     Object.assign(courseForm, { id: 0, name: '', description: '', teacherId: store.state.userid,
-        startDate: '', endDate: '', startTime: '', endTime: '', dayOfWeek: '1' })
+        startDate: '', endDate: '', startTime: '', endTime: '', dayOfWeek: '1', location: '', capacity: 30 })
     showCourseModal.value = true
 }
 
 function onEditCourse(row: Course) {
     isEditCourse.value = true
     Object.assign(courseForm, {id:row.id, name: row.name, description: row.description, teacherId: row.teacherId.id,
-        startDate: row.startDate, endDate: row.endDate, startTime: row.startTime, endTime: row.endTime, dayOfWeek: String(row.dayOfWeek) })
+        startDate: row.startDate, endDate: row.endDate, startTime: row.startTime, endTime: row.endTime, dayOfWeek: String(row.dayOfWeek),location: row.location, capacity: row.capacity })
     showCourseModal.value = true
 }
 
