@@ -112,7 +112,7 @@
                 </template>
                 <template #operation="{ row }">
                     <Button type="info" @click="onEditCourse(row)">编辑</Button>
-                    <Button type="error" @click="onDeleteCourse(row.id)" style="margin-left:8px">删除</Button>
+                    <Button type="error" @click="onDeleteCourse(row.id)">删除</Button>
                 </template>
             </Table>
 
